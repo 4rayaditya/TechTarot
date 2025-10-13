@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tech Tarot — Cards</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <header class="topbar">DAILY DOSE OF UNSOLICITED WISDOM — TECH TAROT</header>
+
+    <main class="hero">
+        <canvas id="starfield" aria-hidden></canvas>
+        <div class="nebula nebula-1" aria-hidden></div>
+        <div class="nebula nebula-2" aria-hidden></div>
+
+        <div class="cards-page container">
+            <div class="cards-grid">
+                <!-- cards injected by JS -->
+            </div>
+            <div class="cards-controls">
+                <button id="backHome" class="btn ghost">Back</button>
+                <button id="pullBtn" class="btn">Pull the cards</button>
+                <button id="reshuffle" class="btn">Reshuffle</button>
+            </div>
+            <div id="cardsResult" class="result hidden"></div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="socials">
+            <a href="/" class="social-link">← Home</a>
+        </div>
+    </footer>
+
+    <script src="js/space.js"></script>
+    <script src="js/cards.js"></script>
+</body>
+
+</html>
