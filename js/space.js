@@ -352,23 +352,34 @@
                     ctx.save();
                     // much smaller ring geometry so it sits tight around Saturn
                     const ringInner = Math.max(1.2, p.r * 1.25);
-                    const ringOuter = Math.max(ringInner + 4, p.r * 1.9);
+                    const ringOuter = Math.max(ringInner + 6, p.r * 2.1);
                     const tilt = 0.6; // subtler tilt
                     ctx.translate(px, py);
                     ctx.rotate(0.18);
+                    // brighter gradient for the ring (higher alpha)
                     const ringGrad = ctx.createLinearGradient(-ringOuter, 0, ringOuter, 0);
-                    ringGrad.addColorStop(0, 'rgba(200,180,150,0.06)');
-                    ringGrad.addColorStop(0.5, 'rgba(240,220,180,0.14)');
-                    ringGrad.addColorStop(1, 'rgba(200,180,150,0.06)');
+                    // reduce alpha so ring is dimmer
+                    ringGrad.addColorStop(0, 'rgba(220,200,160,0.12)');
+                    ringGrad.addColorStop(0.5, 'rgba(255,240,200,0.26)');
+                    ringGrad.addColorStop(1, 'rgba(220,200,160,0.12)');
+                    // use additive blending to make the ring glow brighter
+                    ctx.globalCompositeOperation = 'lighter';
                     ctx.beginPath();
                     ctx.ellipse(0, 0, ringOuter, ringOuter * tilt, 0, 0, Math.PI * 2);
                     ctx.fillStyle = ringGrad;
                     ctx.fill();
-                    // carve inner hole to create ring thickness
+                    // subtle bright rim stroke to accentuate the ring edges
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, ringOuter, ringOuter * tilt, 0, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255,245,210,0.12)';
+                    ctx.lineWidth = Math.max(1, p.r * 0.12);
+                    ctx.stroke();
+                    // carve inner hole to create ring thickness (use destination-out)
                     ctx.globalCompositeOperation = 'destination-out';
                     ctx.beginPath();
                     ctx.ellipse(0, 0, ringInner, ringInner * tilt, 0, 0, Math.PI * 2);
                     ctx.fill();
+                    // restore normal compositing
                     ctx.globalCompositeOperation = 'source-over';
                     ctx.restore();
                 }
