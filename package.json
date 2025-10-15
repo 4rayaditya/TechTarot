@@ -4,14 +4,11 @@
     "private": true,
     "scripts": {
         "start": "npx http-server -c-1",
-        "start:api": "node server.js",
-        "demo": "node tools/demo_screenshot.js"
+        "demo": "echo \"Demo disabled. Install puppeteer and re-enable if needed.\""
     },
     "description": "A playful tech tarot static site",
     "license": "MIT",
     "dependencies": {
-        "dotenv": "^16.3.1",
-        "express": "^4.18.2",
         "ogl": "^1.0.11"
     },
     "devDependencies": {}

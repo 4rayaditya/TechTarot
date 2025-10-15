@@ -1,43 +1,11 @@
-// Serverless handler for Vercel: /api/reading
-// This mirrors the logic previously in server.js but adapted for serverless.
-const cache = new Map();
-
-function parseJsonSafe(raw) {
-    try {
-        const m = String(raw).match(/\{[\s\S]*\}/);
-        if (m) return JSON.parse(m[0]);
-    } catch (e) { /* ignore */ }
-    return null;
-}
-
-async function readRequestBody(req) {
-    if (req.body) return req.body;
-    return await new Promise((resolve, reject) => {
-        let body = '';
-        req.on('data', (chunk) => body += chunk);
-        req.on('end', () => {
-            try { resolve(JSON.parse(body)); } catch (e) { resolve(body); }
-        });
-        req.on('error', reject);
-    });
-}
+// api/reading.js neutralized — project is frontend-only.
+// All readings are generated client-side with the deterministic clientMock() function.
+// If you reintroduce a server, restore the original implementation from git history.
 
 module.exports = async (req, res) => {
-    if (req.method !== 'POST') return res.statusCode ? res.status(405).end('Method Not Allowed') : res.end('Method Not Allowed');
-    try {
-        const body = await readRequestBody(req);
-        const { title, desc, mode = 'witty', deep = false } = (body && typeof body === 'object') ? body : {};
-        if (!title || !desc) return res.status(400).json ? res.status(400).json({ error: 'Missing title or desc' }) : res.end(JSON.stringify({ error: 'Missing title or desc' }));
-
-        const OPENAI_KEY = process.env.OPENAI_API_KEY;
-        const HF_API_TOKEN = process.env.HF_API_TOKEN;
-        const HF_MODEL = process.env.HF_MODEL;
-        const TEXT_GEN_URL = process.env.TEXT_GEN_URL;
-        const TEXT_GEN_TYPE = (process.env.TEXT_GEN_TYPE || '').toLowerCase();
-        const enableMock = process.env.ENABLE_MOCK === 'true';
-
-        const key = `${title}||${mode}||${deep}`;
-        if (cache.has(key)) return res.json ? res.json(cache.get(key)) : res.end(JSON.stringify(cache.get(key)));
+  res.statusCode = 404;
+  res.end('Not Found: This project is frontend-only');
+};
 
         // Mock path when no provider configured
         if (!OPENAI_KEY && !HF_API_TOKEN && !TEXT_GEN_URL && enableMock) {

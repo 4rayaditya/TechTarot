@@ -579,12 +579,11 @@ cards.forEach(card => {
 // debug test button
 if (debugTestBtn) {
     debugTestBtn.addEventListener('click', async () => {
-        debugOut.textContent = 'Sending test request...';
+        debugOut.textContent = 'Generating client-side mock test...';
         try {
             const payload = { title: 'Debug Test', desc: 'quick debug', mode: 'witty', deep: true };
-            const resp = await fetch('/api/reading', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            const txt = await resp.text();
-            debugOut.textContent = `STATUS: ${resp.status}\n\nREQUEST:\n${JSON.stringify(payload, null, 2)}\n\nRESPONSE:\n${txt}`;
+            const data = await clientMock(payload.title, payload.desc, { mode: payload.mode, deep: payload.deep });
+            debugOut.textContent = `REQUEST:\n${JSON.stringify(payload, null, 2)}\n\nRESPONSE:\n${JSON.stringify(data, null, 2)}`;
         } catch (e) {
             debugOut.textContent = `ERROR: ${e.message}`;
         }
