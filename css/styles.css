@@ -694,6 +694,20 @@ select {
     padding: 8px
 }
 
+/* small debug badge (shows canonical id for testing shuffle) */
+.card .badge {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    color: var(--accent);
+    font-weight: 700;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+    z-index: 99999;
+}
+
 /* artwork container inside the back face; fill the whole back */
 .card .art {
     position: absolute;
@@ -746,11 +760,37 @@ select {
     padding: 18px;
     background: linear-gradient(180deg, rgba(12, 18, 28, 0.6), rgba(8, 12, 18, 0.45));
     border-radius: 12px;
-    max-width: 720px;
+    max-width: 920px;
+    min-height: 160px;
+    padding: 22px;
     margin-left: auto;
     margin-right: auto;
     border: 1px solid rgba(40, 70, 80, 0.08);
     box-shadow: 0 10px 30px rgba(2, 8, 20, 0.6)
+}
+
+/* When the result area is shown inside the full-screen cards overlay, ensure
+   it sits above the stacked card visuals so its inline buttons are visible */
+.cards-overlay .result {
+    position: relative;
+    z-index: 20000;
+}
+
+/* Scope absolute positioning to the overlay Close button only so dynamically
+   inserted inline controls (like Clear selection) don't inherit absolute
+   placement and float above the card stack. */
+#closeOverlay.btn.ghost {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 30000;
+}
+
+/* Keep clear-selection inline so it flows inside the result box instead of
+   floating on top of the cards */
+.clear-selection {
+    display: inline-block;
+    margin-top: 12px;
 }
 
 .loading {
@@ -964,12 +1004,18 @@ select {
     margin-top: 8px;
 }
 
-.cards-overlay .btn.ghost {
+.cards-overlay #closeOverlay.btn.ghost {
     position: absolute;
     right: 28px;
     top: 22px;
     color: #cfeff9;
     border-color: rgba(200, 240, 230, 0.12);
+}
+
+/* Clear selection button should be inline in results, not absolute */
+.clear-selection {
+    display: inline-block;
+    margin-top: 12px;
 }
 
 .cards-overlay .btn {
