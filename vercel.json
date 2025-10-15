@@ -4,5 +4,15 @@
             "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "1",
             "PUPPETEER_SKIP_DOWNLOAD": "1"
         }
-    }
+    },
+    "rewrites": [
+        {
+            "source": "/api/:path*",
+            "destination": "/api/:path*"
+        },
+        {
+            "source": "/:path*",
+            "destination": "/index.html"
+        }
+    ]
 }

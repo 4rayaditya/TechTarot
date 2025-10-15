@@ -18,3 +18,4 @@ Thumbs.db
 /.pnp.js
 package-lock.json
 pnpm-lock.yaml
+.vercel
