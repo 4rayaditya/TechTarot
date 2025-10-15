@@ -1,8 +1,14 @@
 const fs = require('fs');
 const path = require('path');
-const puppeteer = require('puppeteer');
+let puppeteer;
+try {
+    puppeteer = require('puppeteer');
+} catch (e) {
+    console.error('Puppeteer not available. Demo screenshot script will not run in this environment.');
+}
 
 (async () => {
+    if (!puppeteer) return console.log('Skipping demo: puppeteer not installed.');
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     const fileUrl = 'file:///' + path.resolve(__dirname, '..', 'index.html').replace(/\\/g, '/');
