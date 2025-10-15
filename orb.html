@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tech Tarot — Orb</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Small overrides for full-screen orb view */
+        .control-panel,
+        .topbar,
+        .footer {
+            display: none !important;
+        }
+
+        .hero {
+            min-height: 100vh;
+        }
+
+        /* Replace the large rectangular electric-card pseudo-elements with a subtle circular rotating glow behind the UI. */
+        .orb-ui .electric-card::before,
+        .orb-ui .electric-card::after {
+            display: none !important;
+        }
+
+        .orb-ui .electric-card::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 520px;
+            height: 520px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 40%, rgba(120, 240, 230, 0.28), rgba(60, 200, 190, 0.16) 40%, rgba(0, 0, 0, 0) 70%);
+            filter: blur(28px) saturate(1.2);
+            z-index: 1;
+            pointer-events: none;
+            animation: orb-soft-rotate 12s linear infinite;
+            mix-blend-mode: screen;
+            opacity: 0.95;
+        }
+
+        @keyframes orb-soft-rotate {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        /* orb-page specific card overrides */
+        .orb-ui .card .front,
+        .orb-ui .card .back {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* remove the panel background so no black border appears behind the cards */
+        .orb-ui .electric-card {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .orb-ui .cards-grid.long-spread {
+            gap: 14px;
+        }
+
+        .orb-ui .cards-grid.long-spread .card {
+            width: 160px;
+            height: 240px;
+            flex: 0 0 auto;
+        }
+
+        /* on the orb page: hover lifts slightly and shows pointer; selected cards move down (no flip) */
+        .orb-ui .cards-grid.fanned .card:hover {
+            transform: translateY(-8px) scale(1.02) !important;
+            cursor: pointer;
+            z-index: auto !important;
+            /* prevent the global hover rule from forcing a high z-index */
+        }
+
+        .orb-ui .cards-grid.fanned .card.selected {
+            transform: translateY(36px) !important;
+            z-index: auto !important;
+        }
+
+        /* selected cards shouldn't receive pointer events so they don't block clicks on cards below */
+        .orb-ui .cards-grid.fanned .card.selected {
+            pointer-events: none;
+        }
+
+        /* small label that appears when a card is selected */
+        .orb-ui .card-label {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -36px;
+            background: rgba(0, 0, 0, 0.6);
+            color: var(--accent-2);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="hero">
+        <canvas id="starfield" aria-hidden></canvas>
+        <div class="nebula nebula-1" aria-hidden></div>
+        <div class="nebula nebula-2" aria-hidden></div>
+
+        <div class="orb-ui"
+            style="position:fixed;left:50%;top:56%;transform:translate(-50%,-50%);z-index:6;text-align:center;pointer-events:none;">
+            <div id="cardSpread" class="electric-card"
+                style="width:95vw;max-width:1400px;padding:14px;pointer-events:auto;">
+                <div class="electric-inner">
+                    <div style="margin-top:6px;color:var(--muted);font-size:13px;text-align:center;display:none">Click
+                        up to three cards to reveal your reading.</div>
+                    <div class="cards-grid fanned" id="orbCards" style="margin-top:8px;position:relative;height:320px;">
+                        <!-- JS will populate 22 cards here in a fanned/staked layout -->
+                    </div>
+                    <div style="margin-top:10px;text-align:center;"><button id="resetCards"
+                            class="btn ghost">Reset</button></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Request orb-only drawing from space.js
+        window.TT_SPACE_OPTIONS = { orbOnly: true, enableSolarSystem: false, cometChancePerSec: 0.15 };
+    </script>
+    <script src="js/space.js"></script>
+    <script src="js/orbShader.js"></script>
+    <script>
+        // small card flip logic for orb page
+        document.addEventListener('DOMContentLoaded', function () {
+            const container = document.getElementById('orbCards');
+            const maxPick = 3; let picks = 0;
+            // generate 22 card elements in a straight stacked layout (no rotation)
+            const cards = [];
+            const total = 22;
+            const centerIndex = (total - 1) / 2;
+            const overlap = 36; // pixels each card offset from previous
+            const clones = [];
+            for (let i = 0; i < total; i++) {
+                const c = document.createElement('div'); c.className = 'card'; c.dataset.index = i;
+                c.style.position = 'absolute';
+                c.style.top = '20px';
+                // straight stacked layout (no rotation) with overlap
+                const offset = i - centerIndex;
+                const x = Math.round(offset * overlap);
+                c.style.left = '50%';
+                c.style.marginLeft = '0px'; // override fanned-layout css that applies a negative margin
+                c.style.transform = `translateX(${x}px) rotate(0deg)`;
+                c.style.transformOrigin = 'bottom center';
+                c.style.zIndex = i + 10;
+                c.innerHTML = '<div class="inner"><div class="front"></div><div class="back"></div></div>';
+                container.appendChild(c);
+
+                // style faces
+                const front = c.querySelector('.front');
+                const back = c.querySelector('.back');
+                // ensure each card has explicit dimensions matching CSS defaults
+                c.style.width = '240px';
+                c.style.height = '340px';
+                // use absolute-root path so the image resolves regardless of CSS file location
+                front.style.backgroundImage = "url('/assets/tarotback.png')";
+                front.style.backgroundSize = 'cover';
+                front.style.backgroundRepeat = 'no-repeat';
+                front.style.backgroundPosition = 'center';
+                front.style.borderRadius = '10px';
+                front.style.backgroundColor = '#2b0f2b'; // fallback so front is not transparent if image fails
+                back.style.background = 'linear-gradient(180deg,#071726,#04111a)';
+                back.style.backgroundRepeat = 'no-repeat';
+                back.style.backgroundPosition = 'center';
+                back.style.display = 'flex'; back.style.alignItems = 'center'; back.style.justifyContent = 'center'; back.style.color = 'var(--accent-2)'; back.style.fontFamily = 'Georgia, serif'; back.style.fontSize = '18px'; back.style.padding = '12px';
+
+                // click handler: pick up to 3 and reveal card face (Major Arcana name)
+                c.addEventListener('click', function () {
+                    if (c.classList.contains('selected')) return;
+                    if (picks >= maxPick) return;
+                    // mark as selected immediately and increment pick count
+                    c.classList.add('selected');
+                    c.classList.add('enter');
+                    picks += 1;
+
+                    // create a non-interactive clone to display the selected card visually
+                    const clone = c.cloneNode(true);
+                    clone.classList.add('selected-clone');
+                    // position the clone exactly where the original is and move it down
+                    clone.style.position = 'absolute';
+                    clone.style.left = c.style.left;
+                    clone.style.transform = `translateX(${x}px) translateY(36px)`;
+                    clone.style.width = c.style.width;
+                    clone.style.height = c.style.height;
+                    clone.style.pointerEvents = 'none';
+                    clone.style.zIndex = '0';
+
+                    // attach visible label showing the arcana name to the clone
+                    const arcana = [
+                        'The Fool', 'The Magician', 'The High Priestess', 'The Empress', 'The Emperor', 'The Hierophant', 'The Lovers', 'The Chariot', 'Strength', 'The Hermit', 'Wheel of Fortune', 'Justice', 'The Hanged Man', 'Death', 'Temperance', 'The Devil', 'The Tower', 'The Star', 'The Moon', 'The Sun', 'Judgement', 'The World'
+                    ];
+                    const name = arcana[i % arcana.length] || ('Card ' + (i + 1));
+                    const label = document.createElement('div');
+                    label.className = 'card-label';
+                    label.textContent = name;
+                    clone.appendChild(label);
+
+                    // hide the original so it no longer captures pointer events
+                    c.style.visibility = 'hidden';
+                    c._clone = clone;
+                    clones.push(clone);
+                    container.appendChild(clone);
+                });
+                cards.push(c);
+            }
+            document.getElementById('resetCards').addEventListener('click', () => {
+                picks = 0;
+                cards.forEach(c => {
+                    c.classList.remove('selected'); c.classList.remove('flipped'); c.classList.remove('enter');
+                    // restore original card visibility
+                    if (c._clone) {
+                        try { container.removeChild(c._clone); } catch (e) { /* ignore */ }
+                        c._clone = null;
+                    }
+                    c.style.visibility = '';
+                });
+            });
+            // make them visible
+            cards.forEach(c => c.classList.add('enter'));
+        });
+    </script>
+
+    <footer class="footer">
+        <div class="socials"><a href="/" class="social-link">← Home</a></div>
+    </footer>
+</body>
+
+</html>

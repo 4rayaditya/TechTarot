@@ -6,26 +6,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Tech Tarot — Cards</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* On the cards page we don't want the starfield/solar system visuals or vertical scrolling */
+        html.cards-page-no-space,
+        body.cards-page-no-space {
+            overflow: hidden !important;
+            height: 100vh !important;
+        }
+
+        body.cards-page-no-space {
+            margin: 0 !important;
+        }
+
+        body.cards-page-no-space #starfield,
+        body.cards-page-no-space .nebula,
+        body.cards-page-no-space .orb-container,
+        body.cards-page-no-space .sun-button {
+            display: none !important;
+        }
+
+        /* ensure nothing shows behind the cards area */
+        body.cards-page-no-space {
+            background-image: none !important;
+            background-color: var(--bg-0);
+        }
+
+        .cards-stage {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            background: var(--bg-0);
+            padding: 24px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .cards-stage .cards-page.container {
+            max-width: 1100px;
+            width: 100%;
+        }
+    </style>
 </head>
 
-<body>
+<body class="cards-page-no-space">
     <header class="topbar">DAILY DOSE OF UNSOLICITED WISDOM — TECH TAROT</header>
 
     <main class="hero">
-        <canvas id="starfield" aria-hidden></canvas>
-        <div class="nebula nebula-1" aria-hidden></div>
-        <div class="nebula nebula-2" aria-hidden></div>
-
-        <div class="cards-page container">
-            <div class="cards-grid">
-                <!-- cards injected by JS -->
+        <!-- Fullscreen stage to cover background space visuals and lock viewport -->
+        <div class="cards-stage">
+            <div class="cards-page container">
+                <div class="cards-grid">
+                    <!-- cards injected by JS -->
+                </div>
+                <div class="cards-controls">
+                    <button id="backHome" class="btn ghost">Back</button>
+                    <button id="pullBtn" class="btn">Pull the cards</button>
+                    <button id="reshuffle" class="btn">Reshuffle</button>
+                </div>
+                <div id="cardsResult" class="result hidden"></div>
             </div>
-            <div class="cards-controls">
-                <button id="backHome" class="btn ghost">Back</button>
-                <button id="pullBtn" class="btn">Pull the cards</button>
-                <button id="reshuffle" class="btn">Reshuffle</button>
-            </div>
-            <div id="cardsResult" class="result hidden"></div>
         </div>
     </main>
 
@@ -35,7 +80,27 @@
         </div>
     </footer>
 
-    <script src="js/space.js"></script>
+    <script>
+        // Mark page and aggressively remove/hide any decorative space visuals so only the cards remain
+        document.documentElement.classList.add('cards-page-no-space');
+        document.body.classList.add('cards-page-no-space');
+        // remove potential DOM elements that could render another sun or planets
+        try {
+            const s = document.getElementById('starfield'); if (s) s.remove();
+            document.querySelectorAll('.nebula, .orb-container, .sun-button, #seeBtn').forEach(el => el.remove());
+            // remove inline orbit containers or other decorative elements
+            document.querySelectorAll('[data-orb], .orb-ui').forEach(el => el.remove());
+            // clear body background
+            document.body.style.backgroundImage = 'none';
+            document.body.style.backgroundColor = 'var(--bg-0)';
+            // lock scroll
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.height = '100vh';
+            document.body.style.height = '100vh';
+        } catch (e) { /* ignore */ }
+        // do not load space.js on this page to avoid canvas-drawn sun/planets
+    </script>
     <script src="js/cards.js"></script>
 </body>
 

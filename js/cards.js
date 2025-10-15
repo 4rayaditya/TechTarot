@@ -1,15 +1,34 @@
 // Standalone cards page script
 (function () {
+    // 22-card deck (tech tarot) with upright/reversed meanings
     const deck = [
-        { title: 'Pivot the product', desc: 'Ignore the roadmap. Build a tiny feature that people love.' },
-        { title: 'Burn the backlog', desc: 'Cut it down to 3 items. Ship tomorrow.' },
-        { title: 'Hire a mentor', desc: 'Find someone who has failed fast and can laugh about it.' },
-        { title: 'Fundraise later', desc: 'Validate one more revenue stream before investor talks.' },
-        { title: 'Automate the boring', desc: 'Build a 1-minute script that saves 1 hour/week.' },
-        { title: 'Make the docs', desc: 'Write one excellent README — it attracts customers.' },
-        { title: 'Timeout for UX', desc: 'Stop adding features. Improve flow and delight.' },
-        { title: 'Ship an experiment', desc: 'A tiny A/B beats another meeting.' }
+        { id: 0, title: 'The Algorithm', upright: 'Destiny, logic patterns, systems in motion', reversed: 'Chaos, unfair biases, broken logic' },
+        { id: 1, title: 'The Hacker', upright: 'Ingenuity, breaking boundaries, finding flaws', reversed: 'Exploitation, recklessness, ethical issues' },
+        { id: 2, title: 'The UX Oracle', upright: 'Intuition, user-centered design, empathy', reversed: 'Confusion, poor interface, ignoring feedback' },
+        { id: 3, title: 'The Cloud', upright: 'Storage, access, decentralization', reversed: 'Data loss, leaks, disconnection' },
+        { id: 4, title: 'The Server', upright: 'Stability, infrastructure, power', reversed: 'Crashes, overload, system failure' },
+        { id: 5, title: 'The Open Source Sage', upright: 'Collaboration, shared knowledge, freedom', reversed: 'Abandonware, lack of support, chaos' },
+        { id: 6, title: 'The Startup', upright: 'New ventures, risk-taking, innovation', reversed: 'Burnout, funding issues, lack of vision' },
+        { id: 7, title: 'The VC (Venture Capitalist)', upright: 'Resources, momentum, strategic alliances', reversed: 'Greed, strings attached, shortsightedness' },
+        { id: 8, title: 'The Data', upright: 'Truth, analytics, clarity through numbers', reversed: 'Misinterpretation, misinformation, bias' },
+        { id: 9, title: 'The AI (Artificial Intelligence)', upright: 'Logic, evolution, advanced intelligence', reversed: 'Over-reliance, loss of control, ethical gray' },
+        { id: 10, title: 'The Bug', upright: 'Disruption, flaw in the system, lesson learned', reversed: 'Recurring issues, denial, system instability' },
+        { id: 11, title: 'The Patch', upright: 'Healing, fixing, iterative improvement', reversed: 'Hasty solutions, temporary fixes' },
+        { id: 12, title: 'The Download', upright: 'Gaining knowledge, new tools, updates', reversed: 'Overwhelm, incompatibility, info dump' },
+        { id: 13, title: 'The Shutdown', upright: 'Endings, transition, rebooting', reversed: 'Resistance to change, crash, burnout' },
+        { id: 14, title: 'The Beta Tester', upright: 'Feedback, adaptability, improvement', reversed: 'Criticism ignored, lack of user testing' },
+        { id: 15, title: 'The Firewall', upright: 'Boundaries, protection, security', reversed: 'Paranoia, blocked growth, false safety' },
+        { id: 16, title: 'The Breach', upright: 'Revelation, system exposed, change forced', reversed: 'Loss of control, panic, scandal' },
+        { id: 17, title: 'The Uplink', upright: 'Connection, network, synchronicity', reversed: 'Disconnection, weak links, isolation' },
+        { id: 18, title: 'The Interface', upright: 'Presentation, interaction, duality', reversed: 'Frustration, poor experience, miscommunication' },
+        { id: 19, title: 'The Update', upright: 'Progress, new version, continuous growth', reversed: 'Resistance, bugs introduced, regression' },
+        { id: 20, title: 'The Merge', upright: 'Integration, collaboration, unity', reversed: 'Conflicts, incompatibility, version control war' },
+        { id: 21, title: 'The Singularity', upright: 'Completion, transcendence, full potential', reversed: 'Fear of the unknown, over-automation' }
     ];
+
+    function slugify(title) {
+        return title.toLowerCase().replace(/[()]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
 
     const grid = document.querySelector('.cards-grid');
     const backBtn = document.getElementById('backHome');
@@ -38,9 +57,29 @@
         el.className = 'card';
         el.dataset.index = i;
         const inner = document.createElement('div'); inner.className = 'inner';
-        const front = document.createElement('div'); front.className = 'front'; front.textContent = '?';
+        // show tarot back before reveal
+        const front = document.createElement('div'); front.className = 'front';
+        front.style.backgroundImage = `url(assets/tarotback.png)`;
+        front.style.backgroundSize = 'cover';
+        front.style.backgroundPosition = 'center';
+        front.textContent = '';
         const back = document.createElement('div'); back.className = 'back';
-        back.innerHTML = `<strong>${info.title}</strong><div class="desc">${info.desc}</div>`;
+        const art = document.createElement('div'); art.className = 'art';
+        const asset = slugify ? (`assets/${slugify(info.title)}.png`) : (`assets/${info.title}.png`);
+        // if getAssetForTitle exists in global scope (from script.js), prefer it
+        if (typeof getAssetForTitle === 'function') art.style.backgroundImage = `url(${getAssetForTitle(info.title)})`;
+        else art.style.backgroundImage = `url(${asset})`;
+        art.style.backgroundSize = 'cover';
+        art.style.backgroundPosition = 'center';
+        const isReversed = Math.random() < 0.5;
+        if (isReversed) el.classList.add('reversed');
+        back.innerHTML = `<strong>${info.title}</strong>`;
+        const readingDiv = document.createElement('div'); readingDiv.className = 'desc reading';
+        readingDiv.innerHTML = isReversed ? info.reversed : info.upright;
+        back.appendChild(art);
+        // store reading in dataset for combined result
+        el.dataset.reading = isReversed ? info.reversed : info.upright;
+        el.dataset.title = info.title;
         inner.appendChild(front); inner.appendChild(back); el.appendChild(inner);
 
         el.addEventListener('click', async () => {
@@ -62,15 +101,13 @@
             updateSelectHint();
 
             // animate flip after a short delay
-            setTimeout(async () => {
+            setTimeout(() => {
                 el.classList.add('flipped');
-                // show per-card result
+                // show per-card result (use precomputed orientation reading)
                 const title = info.title;
+                const readingText = el.dataset.reading || (el.classList.contains('reversed') ? info.reversed : info.upright);
                 cardsResult.classList.remove('hidden');
-                cardsResult.innerHTML = `<h3>${title}</h3><p class="loading">Consulting the oracle…</p>`;
-                // fetch reading
-                const data = await clientMock(title, info.desc);
-                cardsResult.innerHTML = `<h3>${title}</h3><div class="llm">${data.reading}</div>` + (data.actions ? `<ul class="actions">${data.actions.map(a => `<li>${a}</li>`).join('')}</ul>` : '');
+                cardsResult.innerHTML = `<h3>${title}</h3><div class="llm">${readingText}</div>`;
 
                 // if we have 3 selections, show combined reading
                 if (selected.length === 3) {
@@ -97,13 +134,11 @@
         cardsResult.classList.remove('hidden');
         cardsResult.innerHTML = `<h3>Combined reading</h3><p class="loading">Synthesizing the oracle…</p>`;
         // simulate combining by requesting a mock per card and concatenating
-        const parts = [];
-        for (const el of selected) {
-            const title = el.querySelector('.back strong').innerText;
-            const desc = el.querySelector('.back .desc').innerText;
-            const d = await clientMock(title, desc);
-            parts.push(`- ${title}: ${d.reading}`);
-        }
+        const parts = selected.map(el => {
+            const t = el.dataset.title || el.querySelector('.back strong').innerText;
+            const r = el.dataset.reading || el.querySelector('.back .desc')?.innerText || '';
+            return `- ${t}: ${r}`;
+        });
         cardsResult.innerHTML = `<h3>Combined reading</h3><div class="llm">${parts.join('<br>')}</div>`;
         // show a button to clear selections
         const clear = document.createElement('button'); clear.className = 'btn ghost'; clear.textContent = 'Clear selection';
@@ -126,28 +161,45 @@
         grid.classList.remove('spread');
         grid.classList.remove('long-spread');
         grid.classList.remove('fanned');
-        // default: fanned overlapping deck look (no scroll)
+        // default: use fanned overlapping layout on standalone page
         grid.classList.add('fanned');
-        const pool = shuffle(deck.concat(deck, deck));
-        const count = 24;
+        const pool = shuffle(deck.slice());
+        const count = 22; // show all Major Arcana
+        // compute card width so 22 cards fit in one horizontal row within the container
+        const containerWidth = Math.max(600, grid.clientWidth || (window.innerWidth - 160));
+        // compute card size and overlap so 22 cards fit in a fanned stack
+        const idealCardW = 220;
+        const maxCardW = Math.min(220, Math.floor(containerWidth / 6));
+        let cardW = Math.max(72, Math.min(idealCardW, maxCardW));
+        const cardH = Math.round(cardW * (320 / 220));
+        const visibleWidth = containerWidth - 120;
+        const shift = Math.max(22, Math.floor((visibleWidth - cardW) / (count - 1)));
+        const effectiveShift = Math.max(16, Math.min(cardW - 24, shift));
         for (let i = 0; i < count; i++) {
             const info = pool[i % pool.length];
             const card = makeCard(i, info);
             // stacking: lower cards have lower z-index
-            card.style.zIndex = i;
+            card.style.zIndex = 100 + i;
+            // size and absolute position
+            card.style.width = cardW + 'px';
+            card.style.height = cardH + 'px';
+            card.style.left = (i * effectiveShift) + 'px';
+            const rot = (i - count / 2) * 0.6;
+            card.style.transform = `translateY(18px) rotate(${rot}deg)`;
+            card.style.opacity = '0';
             grid.appendChild(card);
-            // place around center by assigning center-* classes for transform presets
-            const centerIndex = Math.floor(count / 2);
-            const offset = i - centerIndex;
-            const posClass = `center${offset >= 0 ? '-' + Math.abs(offset) : offset}`;
-            // just add generic enter and set position via left offset after a tick
             setTimeout(() => {
+                card.style.transition = 'transform 420ms cubic-bezier(.2,.9,.2,1), opacity 360ms ease';
+                card.style.transform = `translateY(0px) rotate(${rot}deg)`;
+                card.style.opacity = '1';
                 card.classList.add('enter');
-                // distribute horizontally by adjusting left using index
-                const spread = (i - centerIndex) * 28;
-                card.style.left = `calc(50% + ${spread}px)`;
-            }, 10 + i * 16);
+            }, 20 + i * 8);
         }
+        // size grid to fit stack
+        const totalWidth = ((count - 1) * effectiveShift) + cardW;
+        grid.style.width = totalWidth + 'px';
+        grid.style.height = (cardH + 40) + 'px';
+        grid.style.margin = '0 auto';
         cardsResult.classList.add('hidden');
     }
 
@@ -177,7 +229,8 @@
 
     // responsive grid styles injection (small) if not present
     const style = document.createElement('style');
-    style.textContent = `.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:18px;align-items:center;justify-items:center;margin:22px 0}.cards-page .cards-controls{display:flex;gap:10px;justify-content:center;margin-top:8px}`;
+    // non-wrapping single-line layout: cards will be scaled to fit into one centered row
+    style.textContent = `.cards-grid{display:flex;gap:18px;align-items:center;justify-content:center;margin:22px 0;flex-wrap:nowrap;overflow:hidden}.cards-grid.long-spread{justify-content:center}.cards-page .cards-controls{display:flex;gap:10px;justify-content:center;margin-top:8px}`;
     document.head.appendChild(style);
 
     renderGrid();

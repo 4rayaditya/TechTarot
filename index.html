@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Tech Tarot</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Sun DOM button styling removed — interactive Sun is canvas-drawn in `starfield` */
+    </style>
 </head>
 
 <body>
@@ -17,6 +20,8 @@
                 class="cursor">|</span></div>
         <div class="nebula nebula-1" aria-hidden></div>
         <div class="nebula nebula-2" aria-hidden></div>
+
+        <!-- Interactive sun removed (canvas-drawn sun is the visual). Click the starfield to open cards. -->
 
         <div class="container">
             <!-- <h1>Strategy? Shuffle. Ship. Repeat.</h1>
@@ -33,7 +38,7 @@
     <aside class="control-panel" aria-hidden="false">
         <div class="panel-inner">
             <div class="intro-area">
-                <button id="seeBtn" class="btn primary">See your fate</button>
+                <!-- Play button moved to footer socials for quick access -->
             </div>
 
             <div class="mode-container electric-card hidden" id="toneBox" aria-hidden="true">
@@ -46,6 +51,8 @@
                     </select>
                 </div>
             </div>
+
+            <!-- questionnaire removed: cards will be shown directly when the sun is clicked -->
 
             <div class="panel-actions">
                 <button id="startBtn" class="btn hidden">Pull the cards</button>
@@ -83,6 +90,7 @@
     </aside>
 
     <footer class="footer">
+        <!-- play trigger moved to the sun button in the top-left -->
         <!-- <div>MADE BY ADITYA</div> -->
         <div class="socials">
             <a href="https://github.com/4rayaditya" target="_blank" rel="noopener" aria-label="GitHub"
@@ -105,6 +113,20 @@
         </div>
     </footer>
 
+    <!-- Full-width cards overlay (hidden by default) -->
+    <div id="cardsOverlay" class="cards-overlay hidden" aria-hidden="true">
+        <div class="overlay-inner">
+            <button id="closeOverlay" class="btn ghost">Close</button>
+            <div class="cards-page container">
+                <div class="cards-grid" id="overlayGrid"></div>
+                <div class="cards-controls">
+                    <button id="overlayPull" class="btn">Pull the cards</button>
+                    <button id="overlayReshuffle" class="btn">Reshuffle</button>
+                </div>
+                <div id="overlayResult" class="result hidden"></div>
+            </div>
+        </div>
+    </div>
     <script src="js/space.js"></script>
     <script src="js/script.js"></script>
 </body>

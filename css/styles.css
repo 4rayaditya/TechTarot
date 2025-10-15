@@ -277,6 +277,51 @@ body {
     padding: 10px;
 }
 
+/* questionnaire modal inside control panel */
+.questionnaire {
+    margin-top: 12px;
+    display: block;
+    gap: 8px;
+}
+
+.questionnaire .q-label {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.questionnaire input[type="text"],
+.questionnaire textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(80, 120, 120, 0.06);
+    background: rgba(10, 14, 18, 0.6);
+    color: var(--accent);
+}
+
+.select-instructions {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 6px 0 10px;
+}
+
+.q-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* fused result modal (small) */
+.personality-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(8, 12, 18, 0.6), rgba(6, 8, 12, 0.45));
+    color: var(--accent-2);
+    border: 1px solid rgba(70, 220, 200, 0.06);
+}
+
 
 @media (max-width:900px) {
     .control-panel {
@@ -423,15 +468,35 @@ select {
     margin-top: 32px
 }
 
+/* Orb shader container for orb.html */
+.orb-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(80vmin, 900px);
+    height: min(80vmin, 900px);
+    z-index: 2;
+    pointer-events: none;
+    /* allow clicks to pass to UI overlay */
+}
+
+.orb-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
 .hidden {
     display: none
 }
 
 .cards {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     justify-content: center;
-    margin: 18px 0
+    align-items: flex-start;
+    margin: 18px 0;
 }
 
 .card {
@@ -445,6 +510,13 @@ select {
     opacity: 0;
     transition: transform 600ms cubic-bezier(.2, .9, .2, 1), opacity 400ms ease;
     will-change: transform, opacity;
+}
+
+/* hover lift for tarot-like feel */
+.card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+    z-index: 50;
 }
 
 /* Spread layout for pulled cards */
@@ -476,15 +548,15 @@ select {
     flex: 0 0 auto;
 }
 
-/* fanned, overlapping row (no scrolling) */
-.cards-grid.fanned {
+/* fanned, overlapping row (no scrolling) - apply only in orb UI where this visual is desired */
+.orb-ui .cards-grid.fanned {
     display: block !important;
     position: relative;
     height: 360px;
     padding: 56px 8px;
 }
 
-.cards-grid.fanned .card {
+.orb-ui .cards-grid.fanned .card {
     position: absolute;
     top: 12px;
     left: 50%;
@@ -494,32 +566,32 @@ select {
     transition: transform 420ms cubic-bezier(.2, .9, .2, 1), left 420ms ease, opacity 300ms ease;
 }
 
-.cards-grid.fanned .card.enter {
+.orb-ui .cards-grid.fanned .card.enter {
     opacity: 1;
 }
 
-.cards-grid.fanned .card:hover {
+.orb-ui .cards-grid.fanned .card:hover {
     transform: translateY(-6px) scale(1.02);
     z-index: 9999
 }
 
-.cards-grid.fanned .card.center {
+.orb-ui .cards-grid.fanned .card.center {
     transform: translateX(-480px) rotate(-3deg)
 }
 
-.cards-grid.fanned .card.center-1 {
+.orb-ui .cards-grid.fanned .card.center-1 {
     transform: translateX(-320px) rotate(-2deg)
 }
 
-.cards-grid.fanned .card.center-2 {
+.orb-ui .cards-grid.fanned .card.center-2 {
     transform: translateX(-160px) rotate(-1deg)
 }
 
-.cards-grid.fanned .card.center-3 {
+.orb-ui .cards-grid.fanned .card.center-3 {
     transform: translateX(160px) rotate(1deg)
 }
 
-.cards-grid.fanned .card.center-4 {
+.orb-ui .cards-grid.fanned .card.center-4 {
     transform: translateX(320px) rotate(2deg)
 }
 
@@ -548,21 +620,22 @@ select {
 }
 
 .card .front {
-    background: linear-gradient(180deg, #2b0f2b 0%, #2d1326 50%, #2a0f1f 100%);
-    background-image: radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(180deg, rgba(10, 8, 12, 0.12), rgba(0, 0, 0, 0.12));
     background-size: 18px 18px, cover;
     color: rgba(220, 255, 250, 0.95);
-    border: 6px solid rgba(10, 6, 8, 0.45);
-    position: relative;
 }
 
 /* ornate back pattern */
+/* ornate back pattern */
+
+/* back face container (art will fill this) */
 .card .back {
-    background-color: #4b2a20;
-    background-image: url('../assets/tarotback.png'), radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.03) 0.5px, transparent 0.6px), radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 0.5px, transparent 0.6px), linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.06));
-    background-size: cover, 24px 24px, 28px 28px, 100% 100%;
-    border: 6px solid rgba(30, 16, 12, 0.5);
-    position: relative;
+    transform: rotateY(180deg);
+    color: var(--muted);
+    padding: 0;
+    font-size: 14px;
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 /* decorative frame flourish using pseudo-element */
@@ -590,10 +663,6 @@ select {
     opacity: 0.18;
 }
 
-.card.enter {
-    transform: translateY(0) rotateX(0deg);
-    opacity: 1
-}
 
 .card.enter {
     transform: translateY(0);
@@ -625,6 +694,20 @@ select {
     padding: 8px
 }
 
+/* artwork container inside the back face; fill the whole back */
+.card .art {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+}
+
+/* rotate only the artwork if this card is reversed */
+.card.reversed .art {
+    transform: rotate(180deg);
+}
+
 .card .front {
     background: linear-gradient(180deg, #071726, #04111a);
     color: #bff8f2;
@@ -647,7 +730,6 @@ select {
     background-size: cover;
     background-position: center;
     color: transparent;
-    /* hide the question mark */
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
 }
@@ -752,7 +834,8 @@ select {
     }
 
     .cards {
-        gap: 12px
+        gap: 12px;
+        padding-bottom: 8px;
     }
 
     .card {
@@ -803,4 +886,133 @@ select {
 
 .tech-overlay .panel-inner {
     box-shadow: 0 8px 28px rgba(0, 30, 40, 0.6);
+}
+
+/* Full-width cards overlay (index page) */
+.cards-overlay {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(2, 6, 12, 0.92), rgba(2, 6, 12, 0.96));
+    padding: 28px;
+    box-sizing: border-box;
+}
+
+.cards-overlay.hidden {
+    display: none;
+}
+
+.cards-overlay .overlay-inner {
+    width: 100%;
+    max-width: none;
+    padding: 8px 12px;
+}
+
+.cards-overlay .cards-page.container {
+    padding: 12px 18px;
+    min-height: 220px;
+}
+
+.cards-overlay .cards-grid {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    overflow: visible;
+}
+
+.cards-overlay .cards-grid.fanned {
+    display: block;
+    position: relative;
+    padding: 28px 8px;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+}
+
+.cards-overlay .cards-grid.fanned .card {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    transform-origin: bottom left;
+    margin: 0;
+    transition: transform 420ms cubic-bezier(.2, .9, .2, 1), left 420ms ease, opacity 300ms ease;
+    will-change: transform, left;
+}
+
+.cards-overlay .cards-grid.fanned .card.enter {
+    opacity: 1;
+}
+
+.cards-overlay .cards-grid.fanned .card:hover {
+    transform: translateY(-14px) scale(1.04) !important;
+    z-index: 99999 !important;
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.6);
+}
+
+.cards-overlay .cards-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.cards-overlay .btn.ghost {
+    position: absolute;
+    right: 28px;
+    top: 22px;
+    color: #cfeff9;
+    border-color: rgba(200, 240, 230, 0.12);
+}
+
+.cards-overlay .btn {
+    background: linear-gradient(180deg, #7fe9e1, #46d7cf);
+    color: #022;
+    font-weight: 700;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+}
+
+/* Standalone cards page: use same fanned overlapping layout so cards.html shows the stacked row */
+.cards-page .cards-grid.fanned {
+    display: block;
+    position: relative;
+    padding: 28px 8px;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+}
+
+.cards-page .cards-grid.fanned .card {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    transform-origin: bottom left;
+    margin: 0;
+    transition: transform 420ms cubic-bezier(.2, .9, .2, 1), left 420ms ease, opacity 300ms ease;
+    will-change: transform, left;
+}
+
+.cards-page .cards-grid.fanned .card.enter {
+    opacity: 1;
+}
+
+.cards-page .cards-grid.fanned .card:hover {
+    transform: translateY(-14px) scale(1.04) !important;
+    z-index: 99999 !important;
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* improve visibility of buttons on standalone cards page */
+.cards-page .btn {
+    background: linear-gradient(180deg, #7fe9e1, #46d7cf);
+    color: #022;
+    font-weight: 700;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
 }

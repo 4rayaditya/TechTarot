@@ -5,6 +5,8 @@
     const ctx = canvas.getContext('2d');
     let w = 0, h = 0, stars = [];
 
+    // allow page-specific overrides via global
+    const OV = (window.TT_SPACE_OPTIONS || {});
     // config tweaks: density, twinkle, palette
     const config = {
         densityDivisor: 4500, // smaller -> more stars
@@ -24,6 +26,14 @@
         // enable an animated, stylized solar system (Sun + 8 planets + some moons)
         enableSolarSystem: true
     };
+
+    // apply overrides from page (e.g. orb-only pages)
+    if (typeof OV.enableSolarSystem !== 'undefined') config.enableSolarSystem = !!OV.enableSolarSystem;
+    if (typeof OV.planetCount !== 'undefined') config.planetCount = OV.planetCount;
+    if (typeof OV.cometChancePerSec !== 'undefined') config.cometChancePerSec = OV.cometChancePerSec;
+    if (typeof OV.meteorChancePerSec !== 'undefined') config.meteorChancePerSec = OV.meteorChancePerSec;
+    // orbOnly makes the canvas show only the starfield + a single glowing orb (no planets)
+    config.orbOnly = !!OV.orbOnly;
 
     // parallax state (for nebula DOM layers)
     const nebulaLayers = Array.from(document.querySelectorAll('.nebula'));
@@ -152,9 +162,12 @@
             tempPlanets.push({ i, d, pr, orbitR });
         }
 
-        // Nudge Mercury slightly away from the Sun for visual clarity
+        // Ensure the innermost planet's orbit doesn't overlap the Sun.
+        // Make sure Mercury (index 0) is at least Sun.radius + its radius + a margin away.
+        const innerMargin = 8; // pixels of clearance from sun to planet surface
         if (tempPlanets.length > 0) {
-            tempPlanets[0].orbitR += 6; // small outward nudge
+            const minSafe = Math.round(solarSystem.sun.r + tempPlanets[0].pr + innerMargin);
+            tempPlanets[0].orbitR = Math.max(tempPlanets[0].orbitR, Math.max(minOrbit, minSafe));
         }
 
         // Second pass: enforce minimum gaps between neighbors based on planet radii
@@ -195,6 +208,16 @@
         }
     }
 
+    // ripple effects state (for sun click feedback)
+    const sunRipples = [];
+    // allow other scripts to trigger a sun ripple
+    window.ttTriggerSunRipple = function (opts = {}) {
+        const now = Date.now();
+        sunRipples.push({ t: now, life: 600, maxR: (solarSystem ? solarSystem.sun.r * 5 : Math.max(w, h) / 8), alpha: 0.9 });
+        // keep array trimmed
+        if (sunRipples.length > 6) sunRipples.shift();
+    };
+
     function spawnComet() {
         // comets spawn off the left or right and glide mostly horizontally across the screen
         const fromLeft = Math.random() < 0.5;
@@ -234,6 +257,31 @@
     }
 
     function drawPlanets(dt) {
+        // orb-only mode: render a single centered glowing orb and return
+        if (config.orbOnly) {
+            const centerX = w * 0.5 + offsetX * 0.01;
+            const centerY = h * 0.5 + offsetY * 0.01;
+            const orbR = Math.min(w, h) * 0.28;
+            // outer glow
+            const grad = ctx.createRadialGradient(centerX, centerY, orbR * 0.2, centerX, centerY, orbR * 2.2);
+            grad.addColorStop(0, 'rgba(120,180,255,0.95)');
+            grad.addColorStop(0.35, 'rgba(90,150,230,0.28)');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(centerX, centerY, orbR * 1.8, 0, Math.PI * 2); ctx.fill();
+            // inner halo
+            const halo = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, orbR);
+            halo.addColorStop(0, 'rgba(255,255,255,0.85)');
+            halo.addColorStop(0.18, 'rgba(160,200,255,0.6)');
+            halo.addColorStop(0.6, 'rgba(80,140,200,0.12)');
+            halo.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = halo;
+            ctx.beginPath(); ctx.arc(centerX, centerY, orbR, 0, Math.PI * 2); ctx.fill();
+            // (Removed bright rim stroke to avoid a harsh white circle — kept soft gradients above)
+            // If a subtle edge is desired later, reduce alpha or lineWidth instead of a hard stroke.
+            return;
+        }
+
         // If solar system enabled, render stylized Sun + orbits + planets + moons
         if (config.enableSolarSystem && solarSystem) {
             const s = solarSystem;
@@ -265,6 +313,24 @@
             ctx.fillStyle = `rgba(${sun.color[0]},${sun.color[1]},${sun.color[2]},1)`;
             ctx.arc(s.cx, s.cy, sun.r, 0, Math.PI * 2);
             ctx.fill();
+
+            // draw sun ripples if any
+            if (sunRipples.length) {
+                const now = Date.now();
+                for (let i = sunRipples.length - 1; i >= 0; i--) {
+                    const r = sunRipples[i];
+                    const dt = now - r.t;
+                    if (dt > r.life) { sunRipples.splice(i, 1); continue; }
+                    const progress = dt / r.life;
+                    const radius = r.maxR * progress;
+                    const a = (1 - progress) * r.alpha * 0.85;
+                    const g = ctx.createRadialGradient(s.cx, s.cy, Math.max(1, radius * 0.08), s.cx, s.cy, Math.max(2, radius));
+                    g.addColorStop(0, `rgba(255,220,150,${a})`);
+                    g.addColorStop(0.6, `rgba(255,200,120,${a * 0.28})`);
+                    g.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.beginPath(); ctx.fillStyle = g; ctx.arc(s.cx, s.cy, radius, 0, Math.PI * 2); ctx.fill();
+                }
+            }
 
             // draw planets and moons
             for (const p of s.planets) {
