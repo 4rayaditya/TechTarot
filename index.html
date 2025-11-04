@@ -4,22 +4,132 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tech Tarot</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Tech Tarot — Daily Dose of Unsolicited Wisdom</title>
+    <meta name="description"
+        content="A playful, cosmic tarot experience for founders, makers, and midnight pivots. Strategy? Shuffle. Ship. Repeat.">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tech-tarot.vercel.app/">
+    <meta property="og:title" content="Tech Tarot — Daily Dose of Unsolicited Wisdom">
+    <meta property="og:description"
+        content="A playful, cosmic tarot experience for founders, makers, and midnight pivots.">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://tech-tarot.vercel.app/">
+    <meta property="twitter:title" content="Tech Tarot">
+    <meta property="twitter:description"
+        content="A playful, cosmic tarot experience for founders, makers, and midnight pivots.">
+
+    <!-- Preload critical assets -->
+    <link rel="preload" href="css/styles.css?v=2.0" as="style">
+
+    <link rel="stylesheet" href="css/styles.css?v=2.0">
+
+    <!-- Preconnect to external resources if needed -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
     <style>
-        /* Sun DOM button styling removed — interactive Sun is canvas-drawn in `starfield` */
+        /* Page load animation */
+        body {
+            animation: fadeIn 0.8s ease-out;
+            background: linear-gradient(135deg,
+                    #03040a 0%,
+                    #071226 25%,
+                    #0a1830 50%,
+                    #071226 75%,
+                    #03040a 100%);
+            background-size: 400% 400%;
+            animation: fadeIn 0.8s ease-out, shimmerBackground 20s ease infinite;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes shimmerBackground {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Floating particles effect */
+        .hero::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(2px 2px at 20% 30%, rgba(127, 233, 225, 0.3), transparent),
+                radial-gradient(2px 2px at 60% 70%, rgba(70, 215, 207, 0.2), transparent),
+                radial-gradient(1px 1px at 50% 50%, rgba(127, 233, 225, 0.2), transparent),
+                radial-gradient(1px 1px at 80% 10%, rgba(70, 215, 207, 0.3), transparent),
+                radial-gradient(2px 2px at 90% 60%, rgba(127, 233, 225, 0.2), transparent),
+                radial-gradient(1px 1px at 30% 80%, rgba(127, 233, 225, 0.25), transparent);
+            background-size: 200% 200%, 150% 150%, 180% 180%, 220% 220%, 190% 190%, 210% 210%;
+            background-position: 0% 0%, 100% 100%, 50% 50%, 100% 0%, 0% 100%, 50% 0%;
+            animation: particleFloat 25s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes particleFloat {
+
+            0%,
+            100% {
+                opacity: 0.3;
+                background-position: 0% 0%, 100% 100%, 50% 50%, 100% 0%, 0% 100%, 50% 0%;
+            }
+
+            50% {
+                opacity: 0.6;
+                background-position: 100% 100%, 0% 0%, 70% 30%, 0% 100%, 100% 0%, 20% 80%;
+            }
+        }
+
+        /* Custom cursor for interactive elements */
+        .hero,
+        .control-panel {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%237fe9e1" stroke-width="2"><circle cx="12" cy="12" r="10" opacity="0.3"/><circle cx="12" cy="12" r="3"/></svg>'), auto;
+        }
+
+        button,
+        a,
+        select {
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
-    <header class="topbar">DAILY DOSE OF UNSOLICITED WISDOM — TECH TAROT</header>
+    <header class="topbar" role="banner">
+        <span class="topbar-text">DAILY DOSE OF UNSOLICITED WISDOM — TECH TAROT</span>
+    </header>
 
-    <main class="hero">
-        <canvas id="starfield" aria-hidden></canvas>
-        <div id="floatingText" class="floating-text" aria-hidden="false"><span id="typingText"></span><span
-                class="cursor">|</span></div>
-        <div class="nebula nebula-1" aria-hidden></div>
-        <div class="nebula nebula-2" aria-hidden></div>
+    <main class="hero" role="main">
+        <canvas id="starfield" aria-label="Interactive cosmic background with planets"></canvas>
+        <div class="nebula nebula-1" aria-hidden="true"></div>
+        <div class="nebula nebula-2" aria-hidden="true"></div>
 
         <!-- Interactive sun removed (canvas-drawn sun is the visual). Click the starfield to open cards. -->
 
@@ -35,7 +145,7 @@
         <!-- decorative side SVGs removed for a cleaner, minimal layout -->
     </main>
 
-    <aside class="control-panel" aria-hidden="false">
+    <aside class="control-panel hidden" aria-hidden="true">
         <div class="panel-inner">
             <div class="intro-area">
                 <!-- Play button moved to footer socials for quick access -->

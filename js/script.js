@@ -293,37 +293,44 @@ function showOverlayCombined() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initOverlayControls);
 else initOverlayControls();
 
-// Floating typing text animation
-const typingText = document.getElementById('typingText');
-const phrases = ['Away from the Sun', 'Orbiting ideas', 'Ship boldly', 'Stay curious'];
-let typingIndex = 0;
-let charIndex = 0;
-let typingForward = true;
+// Floating typing text animation - DISABLED
+// const typingText = document.getElementById('typingText');
+// const floatingTextBox = document.getElementById('floatingText');
+// const phrases = ['Away from the Sun', 'Orbiting ideas', 'Ship boldly', 'Stay curious'];
+// let typingIndex = 0;
+// let charIndex = 0;
+// let typingForward = true;
 
-function tickTyping() {
-    if (!typingText) return;
-    const phrase = phrases[typingIndex];
-    if (typingForward) {
-        charIndex++;
-        typingText.textContent = phrase.slice(0, charIndex);
-        if (charIndex >= phrase.length) {
-            typingForward = false;
-            setTimeout(tickTyping, 1200);
-            return;
-        }
-    } else {
-        charIndex--;
-        typingText.textContent = phrase.slice(0, charIndex);
-        if (charIndex <= 0) {
-            typingForward = true;
-            typingIndex = (typingIndex + 1) % phrases.length;
-        }
-    }
-    setTimeout(tickTyping, typingForward ? 80 : 30);
-}
+// function tickTyping() {
+//     if (!typingText) return;
+
+//     // Show the floating text box when typing starts
+//     if (floatingTextBox && charIndex === 0 && typingForward) {
+//         floatingTextBox.classList.add('active');
+//     }
+
+//     const phrase = phrases[typingIndex];
+//     if (typingForward) {
+//         charIndex++;
+//         typingText.textContent = phrase.slice(0, charIndex);
+//         if (charIndex >= phrase.length) {
+//             typingForward = false;
+//             setTimeout(tickTyping, 1200);
+//             return;
+//         }
+//     } else {
+//         charIndex--;
+//         typingText.textContent = phrase.slice(0, charIndex);
+//         if (charIndex <= 0) {
+//             typingForward = true;
+//             typingIndex = (typingIndex + 1) % phrases.length;
+//         }
+//     }
+//     setTimeout(tickTyping, typingForward ? 80 : 30);
+// }
 
 // start typing after a short delay
-setTimeout(() => { tickTyping(); }, 800);
+// setTimeout(() => { tickTyping(); }, 800);
 
 function shuffle(arr) {
     const a = arr.slice();

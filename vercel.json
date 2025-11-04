@@ -1,18 +1,11 @@
 {
-    "build": {
-        "env": {
-            "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "1",
-            "PUPPETEER_SKIP_DOWNLOAD": "1"
-        }
+  "routes": [
+    {
+      "handle": "filesystem"
     },
-    "rewrites": [
-        {
-            "source": "/api/:path*",
-            "destination": "/api/:path*"
-        },
-        {
-            "source": "/:path*",
-            "destination": "/index.html"
-        }
-    ]
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
 }
