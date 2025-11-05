@@ -43,6 +43,78 @@ body {
     font-size: 16px;
     line-height: 1.6;
     font-weight: 400;
+    position: relative;
+}
+
+/* Center rotating yellow sphere (non-interactive) */
+.sphere-yellow {
+    position: fixed;
+    left: 50%;
+    top: calc(50% - 18.5px);
+    transform: translate(-50%, -50%);
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #f9e79f, #f5d76e);
+    box-shadow:
+        0 0 30px rgba(245, 206, 9, 0.6),
+        0 0 60px rgba(238, 199, 7, 0.5),
+        0 0 90px rgba(190, 121, 10, 0.4);
+    animation: glowRotateYellow 5s infinite linear;
+    z-index: 4;
+    pointer-events: none;
+}
+
+@keyframes glowRotateYellow {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+        box-shadow:
+            0 0 30px rgba(245, 206, 9, 0.6),
+            0 0 60px rgba(238, 199, 7, 0.5),
+            0 0 90px rgba(190, 121, 10, 0.4);
+    }
+    50% {
+        transform: translate(-50%, -50%) rotate(180deg);
+        box-shadow:
+            0 0 45px rgba(245, 206, 9, 0.7),
+            0 0 75px rgba(238, 199, 7, 0.6),
+            0 0 105px rgba(190, 121, 10, 0.5);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+        box-shadow:
+            0 0 30px rgba(245, 206, 9, 0.6),
+            0 0 60px rgba(238, 199, 7, 0.5),
+            0 0 90px rgba(190, 121, 10, 0.4);
+    }
+}
+
+/* Glow effect on both sides of the page */
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 200px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+body::before {
+    left: 0;
+    background: linear-gradient(to right, 
+        rgba(73, 157, 158, 0.15) 0%,
+        rgba(73, 157, 158, 0.08) 30%,
+        transparent 100%);
+}
+
+body::after {
+    right: 0;
+    background: linear-gradient(to left, 
+        rgba(73, 157, 158, 0.15) 0%,
+        rgba(73, 157, 158, 0.08) 30%,
+        transparent 100%);
 }
 
 h1,
@@ -204,6 +276,47 @@ h3 {
     padding: 48px;
     position: relative;
     z-index: 5
+}
+
+/* TechTarot logo - centered with slow fade-in */
+.techtarot-logo {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 120px;
+    font-weight: 600;
+    color: #ffffff;
+    text-align: center;
+    margin: 0 auto;
+    display: block;
+    cursor: pointer;
+    opacity: 0;
+    animation: fadeInSlow 1.5s ease-in forwards;
+    position: absolute;
+    top: calc(50% - 50px);
+    left: calc(50% + 20px);
+    transform: translate(-50%, -50%);
+    z-index: 6;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    filter: 
+        drop-shadow(0 0 6px rgba(73, 157, 158, 0.6))
+        drop-shadow(0 0 10px rgba(73, 157, 158, 0.5))
+        drop-shadow(0 0 14px rgba(73, 157, 158, 0.4))
+        drop-shadow(0 0 18px rgba(73, 157, 158, 0.3));
+    white-space: nowrap;
+}
+
+.techtarot-logo:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 0.85;
+}
+
+@keyframes fadeInSlow {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.75;
+    }
 }
 
 /* Floating control panel on the right so the center stays clear for visuals */
@@ -600,11 +713,13 @@ select {
 .btn.ghost {
     background: transparent;
     border: 1px solid rgba(127, 233, 225, 0.15);
+    color: #7fe9e1;
 }
 
 .btn.ghost:hover {
     background: rgba(127, 233, 225, 0.05);
     border-color: rgba(127, 233, 225, 0.3);
+    color: #7fe9e1;
 }
 
 .decor {
@@ -835,7 +950,7 @@ select {
     bottom: 8px;
     border-radius: 8px;
     pointer-events: none;
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 240, 0.03), inset 0 0 24px rgba(70, 30, 50, 0.18);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 240, 0.03), inset 0 0 24px rgba(60, 200, 190, 0.18);
 }
 
 .card .back::after {
@@ -907,10 +1022,10 @@ select {
     background-position: center;
 }
 
-/* rotate only the artwork if this card is reversed */
-.card.reversed .art {
+/* rotate only the artwork if this card is reversed - DISABLED */
+/* .card.reversed .art {
     transform: rotate(180deg);
-}
+} */
 
 .card .front {
     background: linear-gradient(180deg, #071726, #04111a);
@@ -964,6 +1079,10 @@ select {
 .cards-overlay .result {
     position: relative;
     z-index: 20000;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 /* Scope absolute positioning to the overlay Close button only so dynamically
@@ -1025,7 +1144,22 @@ select {
     text-align: center;
     font-size: 12px;
     color: var(--muted);
-    z-index: 5
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.cosmic-text {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--accent);
+    margin: 0 0 20px 0;
+    padding: 0;
+    text-align: center;
+    opacity: 0.85;
 }
 
 /* Footer social/layout tweaks */
@@ -1127,26 +1261,328 @@ select {
     bottom: 0;
     z-index: 10050;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    background: linear-gradient(180deg, rgba(2, 6, 12, 0.92), rgba(2, 6, 12, 0.96));
+    background: linear-gradient(180deg, rgba(2, 6, 12, 0.6), rgba(2, 6, 12, 0.7));
     padding: 28px;
     box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .cards-overlay.hidden {
     display: none;
 }
 
+/* User info form overlay */
+.user-info-overlay {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeInOverlay 0.6s ease-in forwards;
+}
+
+.user-info-overlay.hidden {
+    display: none;
+}
+
+@keyframes fadeInOverlay {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.user-info-form {
+    background: linear-gradient(180deg, rgba(12, 18, 28, 0.95), rgba(8, 12, 18, 0.95));
+    border: 1px solid rgba(127, 233, 225, 0.2);
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.user-info-form h2 {
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--accent);
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    background: linear-gradient(180deg, rgba(10, 20, 28, 0.85), rgba(8, 12, 18, 0.85));
+    border: 1px solid rgba(127, 233, 225, 0.25);
+    border-radius: 8px;
+    color: var(--accent);
+    font-size: 16px;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: rgba(127, 233, 225, 0.5);
+    box-shadow: 0 0 15px rgba(127, 233, 225, 0.2);
+}
+
+.form-group input::placeholder {
+    color: rgba(127, 233, 225, 0.4);
+}
+
+#submitUserInfo {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Questions window - appears after cards load */
+.questions-window {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10055;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    animation: fadeInQuestions 0.8s ease-in forwards;
+}
+
+.questions-window.hidden {
+    display: none;
+}
+
+.questions-window.fade-out {
+    animation: fadeOutQuestions 0.6s ease-out forwards;
+}
+
+@keyframes fadeInQuestions {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOutQuestions {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.questions-header-text {
+    color: #ffffff;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 72px;
+    text-align: center;
+    margin-bottom: 32px;
+    margin-top: -60px;
+    pointer-events: none;
+}
+
+.questions-container {
+    display: flex;
+    gap: 24px;
+    max-width: 1200px;
+    width: 90%;
+    pointer-events: auto;
+}
+
+.question-block {
+    flex: 1;
+    background: linear-gradient(180deg, rgba(15, 20, 30, 0.85), rgba(10, 15, 25, 0.85));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(127, 233, 225, 0.15);
+    border-radius: 16px;
+    padding: 40px;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* Matte finish effect */
+    filter: saturate(0.9) contrast(1.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.question-block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('../assets/formback.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.4;
+    filter: saturate(1.2);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.question-block > * {
+    position: relative;
+    z-index: 1;
+}
+
+.question-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    width: 100%;
+}
+
+.question-text {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 500;
+    font-style: italic;
+    text-align: center;
+    letter-spacing: 0.5px;
+    font-family: 'Playfair Display', serif;
+}
+
+.birthday-input-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 80%;
+    max-width: 300px;
+}
+
+.question-input {
+    width: 80%;
+    max-width: 300px;
+    padding: 14px 18px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(127, 233, 225, 0.3);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 16px;
+    font-family: 'Playfair Display', serif;
+    text-align: center;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.birthday-input-container .question-input {
+    width: 100%;
+    flex: 1;
+}
+
+.calendar-button {
+    background: rgba(127, 233, 225, 0.2);
+    border: 1px solid rgba(127, 233, 225, 0.3);
+    border-radius: 8px;
+    padding: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(127, 233, 225, 0.9);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.calendar-button:hover {
+    background: rgba(127, 233, 225, 0.3);
+    border-color: rgba(127, 233, 225, 0.5);
+    color: rgba(127, 233, 225, 1);
+    transform: scale(1.05);
+}
+
+.calendar-button:active {
+    transform: scale(0.95);
+}
+
+.calendar-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+.question-input:focus {
+    outline: none;
+    border-color: rgba(127, 233, 225, 0.6);
+    box-shadow: 0 0 15px rgba(127, 233, 225, 0.3);
+}
+
+.question-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Style date input specifically */
+.question-input[type="date"] {
+    color-scheme: dark;
+    cursor: pointer;
+}
+
+.question-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
 .cards-overlay .overlay-inner {
     width: 100%;
     max-width: none;
     padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
 .cards-overlay .cards-page.container {
     padding: 12px 18px;
     min-height: 220px;
+    margin: auto;
+    width: 100%;
+    max-width: 1400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .cards-overlay .cards-grid {
@@ -1156,6 +1592,7 @@ select {
     justify-content: center;
     flex-wrap: nowrap;
     overflow: visible;
+    margin: auto;
 }
 
 .cards-overlay .cards-grid.fanned {
@@ -1165,6 +1602,7 @@ select {
     align-items: center;
     justify-content: center;
     height: auto;
+    margin: auto;
 }
 
 .cards-overlay .cards-grid.fanned .card {
@@ -1217,7 +1655,7 @@ select {
     position: absolute;
     right: 28px;
     top: 22px;
-    color: #cfeff9;
+    color: #7fe9e1;
     border-color: rgba(200, 240, 230, 0.12);
 }
 
@@ -1232,6 +1670,121 @@ select {
     color: #022;
     font-weight: 700;
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+}
+
+/* Combined reading layout - horizontal blocks with PNG and reading */
+.combined-reading-container {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: stretch;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.combined-card-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(180deg, rgba(15, 20, 30, 0.6), rgba(10, 15, 25, 0.6));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(127, 233, 225, 0.2);
+    border-radius: 16px;
+    flex: 1;
+    min-width: 280px;
+    max-width: 350px;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.combined-card-item::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        transparent 40%,
+        rgba(127, 233, 225, 0.3) 50%,
+        transparent 60%,
+        transparent 100%
+    );
+    transform: rotate(45deg);
+    transition: left 1.2s ease, top 1.2s ease, opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+}
+
+.combined-card-item:hover {
+    transform: translateY(-5px);
+    border-color: rgba(127, 233, 225, 0.4);
+    box-shadow: 
+        0 0 20px rgba(127, 233, 225, 0.4),
+        0 0 40px rgba(127, 233, 225, 0.3),
+        0 0 60px rgba(127, 233, 225, 0.2);
+}
+
+.combined-card-item:hover::before {
+    opacity: 1;
+    left: 150%;
+    top: 150%;
+}
+
+.combined-card-image {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.selected-card-png {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.combined-card-reading {
+    width: 100%;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+}
+
+.combined-card-title {
+    color: #7fe9e1;
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.combined-card-title em {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.combined-card-text {
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.6;
+    opacity: 0.9;
 }
 
 /* Standalone cards page: use same fanned overlapping layout so cards.html shows the stacked row */
