@@ -59,7 +59,7 @@ if (modeSelect) {
     updateModePreview();
 }
 
-// reveal flow: clicking the canvas (visual Sun) reveals the cards page
+// reveal flow: clicking the canvas (visual Sun) or logo reveals the cards page
 const toneBox = document.getElementById('toneBox');
 const starfield = document.getElementById('starfield');
 if (starfield) {
@@ -67,7 +67,17 @@ if (starfield) {
     // clicking the canvas opens the overlay on the index page
     starfield.addEventListener('click', () => {
         const overlay = document.getElementById('cardsOverlay');
-        if (overlay) openCardsOverlay();
+        if (overlay) openCardsWithQuestions();
+        else window.location.href = 'cards.html';
+    });
+}
+
+// Make the TechTarot logo clickable - same behavior as starfield
+const techtarotLogo = document.getElementById('techtarotLogo');
+if (techtarotLogo) {
+    techtarotLogo.addEventListener('click', () => {
+        const overlay = document.getElementById('cardsOverlay');
+        if (overlay) openCardsWithQuestions();
         else window.location.href = 'cards.html';
     });
 }
@@ -141,6 +151,52 @@ function getAssetForTitle(title) {
     return `assets/${name}`;
 }
 
+// Get all available card images (limited to specific set)
+function getAllCardImages() {
+    const allowedImages = [
+        'vc.png',
+        'ux_oracle.png',
+        'uplink.png',
+        'update.png',
+        'startup.png',
+        'singularity.png',
+        'server.png',
+        'patch.png',
+        'open_sourc_sage.png',
+        'merge.png',
+        'interface.png',
+        'hacker.png',
+        'firewall.png',
+        'download.png',
+        'data.png',
+        'cloud.png',
+        'bug.png',
+        'breach.png',
+        'beta_tester.png',
+        'algorithm.png',
+        'ai.png'
+    ];
+    return allowedImages.map(img => `assets/${img}`);
+}
+
+// Get a random card image
+function getRandomCardImage() {
+    const images = getAllCardImages();
+    return images[Math.floor(Math.random() * images.length)];
+}
+
+// Get the card title for a given image filename
+function getTitleForImage(imageFilename) {
+    // Reverse lookup in IMAGE_MAP
+    for (const [title, filename] of Object.entries(IMAGE_MAP)) {
+        if (filename === imageFilename) {
+            return title;
+        }
+    }
+    // Fallback if not found
+    return null;
+}
+
 function openCardsOverlay() {
     const overlay = document.getElementById('cardsOverlay');
     if (!overlay) return;
@@ -149,7 +205,90 @@ function openCardsOverlay() {
     // lock background scroll
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
+    // Show user info form overlay first
+    const userInfoOverlay = document.getElementById('userInfoOverlay');
+    if (userInfoOverlay) {
+        userInfoOverlay.classList.remove('hidden');
+    }
+    // Don't render cards grid yet - wait for form submission
+    // renderOverlayGrid();
+}
+
+function openCardsWithQuestions() {
+    const overlay = document.getElementById('cardsOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('hidden');
+    overlay.setAttribute('aria-hidden', 'false');
+    // lock background scroll
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    // Reset questions answered flag
+    questionsAnswered = false;
+    // Render cards first
     renderOverlayGrid();
+    // Disable card interactions initially
+    disableCardInteractions();
+    // Then fade in the questions window after a short delay
+    setTimeout(() => {
+        const questionsWindow = document.getElementById('questionsWindow');
+        if (questionsWindow) {
+            questionsWindow.classList.remove('hidden');
+        }
+        // Set up question validation
+        setupQuestionValidation();
+    }, 500);
+}
+
+function disableCardInteractions() {
+    const overlayGrid = getOverlayGrid();
+    if (!overlayGrid) return;
+    overlayGrid.style.pointerEvents = 'none';
+    overlayGrid.style.opacity = '0.6';
+}
+
+function enableCardInteractions() {
+    const overlayGrid = getOverlayGrid();
+    if (!overlayGrid) return;
+    overlayGrid.style.pointerEvents = 'auto';
+    overlayGrid.style.opacity = '1';
+}
+
+function setupQuestionValidation() {
+    const nameInput = document.getElementById('overlayUserName');
+    const birthdayInput = document.getElementById('overlayUserBirthday');
+    const calendarButton = document.getElementById('calendarButton');
+    
+    function checkAndFadeOut() {
+        const name = nameInput?.value.trim();
+        const birthday = birthdayInput?.value;
+        
+        if (name && birthday) {
+            // Both questions answered
+            questionsAnswered = true;
+            const questionsWindow = document.getElementById('questionsWindow');
+            if (questionsWindow) {
+                questionsWindow.classList.add('fade-out');
+                setTimeout(() => {
+                    questionsWindow.classList.add('hidden');
+                    enableCardInteractions();
+                }, 600); // Match fade out animation duration
+            }
+        }
+    }
+    
+    if (nameInput) {
+        nameInput.addEventListener('input', checkAndFadeOut);
+    }
+    if (birthdayInput) {
+        birthdayInput.addEventListener('change', checkAndFadeOut);
+    }
+    
+    // Calendar button click handler
+    if (calendarButton && birthdayInput) {
+        calendarButton.addEventListener('click', () => {
+            birthdayInput.showPicker ? birthdayInput.showPicker() : birthdayInput.focus();
+        });
+    }
 }
 
 function closeCardsOverlay() {
@@ -173,20 +312,27 @@ function makeOverlayCard(i, info) {
     // back contains the artwork and the reading
     const back = document.createElement('div'); back.className = 'back';
     const art = document.createElement('div'); art.className = 'art';
+    // Initially use the title-based asset, but will be randomized on click
     const asset = getAssetForTitle(info.title);
     art.style.backgroundImage = `url(${asset})`;
     art.style.backgroundSize = 'cover';
     art.style.backgroundPosition = 'center';
-    // randomly determine orientation
-    const isReversed = Math.random() < 0.5;
-    el.dataset.reversed = isReversed ? '1' : '0';
-    if (isReversed) el.classList.add('reversed');
+    // Don't reverse images - always show upright
+    const isReversed = false;
+    el.dataset.reversed = '0';
+    // Don't add 'reversed' class to prevent image rotation
     // back shows only artwork (reading will appear in the combined result after 3 picks)
     back.appendChild(art);
     inner.appendChild(front); inner.appendChild(back); el.appendChild(inner);
     el.addEventListener('click', async () => {
+        // Prevent card selection if questions aren't answered
+        if (!questionsAnswered) {
+            return;
+        }
         // selection flow for overlay: toggle selection; allow up to 3 picks
         const overlayResult = getOverlayResult();
+        const cardId = el.dataset.index; // Get unique card ID
+        
         if (el.classList.contains('selected')) {
             // deselect
             el.classList.remove('selected');
@@ -194,15 +340,31 @@ function makeOverlayCard(i, info) {
             el.dataset.picked = '0';
             // remove from selected list
             overlaySelected = overlaySelected.filter(s => s.el !== el);
+            selectedCardIds.delete(cardId); // Remove from tracking set
             if (overlayResult) overlayResult.classList.add('hidden');
             return;
         }
         if (overlaySelected.length >= 3) return; // max reached
+        // Prevent selecting the same card ID twice (even if previously deselected)
+        if (selectedCardIds.has(cardId)) {
+            return; // This card ID has already been selected
+        }
+        // Randomize the image when card is picked
+        const randomImage = getRandomCardImage();
+        art.style.backgroundImage = `url(${randomImage})`;
+        // Find the card title that corresponds to this image
+        const imageFilename = randomImage.replace('assets/', '');
+        const cardTitleForImage = getTitleForImage(imageFilename);
+        // Find the card info for this title
+        const cardInfoForImage = MAJOR_ARCANA.find(card => card.title === cardTitleForImage);
+        // Use the reading from the card that matches the image
+        const imageReading = cardInfoForImage ? (isReversed ? cardInfoForImage.reversed : cardInfoForImage.upright) : (isReversed ? info.reversed : info.upright);
+        const imageTitle = cardInfoForImage ? cardInfoForImage.title : info.title;
         // select and flip (no per-card text shown)
         el.classList.add('selected'); el.classList.add('flipped');
         el.dataset.picked = '1';
-        const reading = isReversed ? info.reversed : info.upright;
-        overlaySelected.push({ el, title: info.title, reading, reversed: !!isReversed });
+        selectedCardIds.add(cardId); // Track this card ID
+        overlaySelected.push({ el, title: imageTitle, reading: imageReading, reversed: !!isReversed, image: randomImage });
         // if we have 3 picks, show combined randomized reading
         if (overlaySelected.length === 3) showOverlayCombined();
     });
@@ -213,6 +375,9 @@ function renderOverlayGrid() {
     const overlayGrid = getOverlayGrid();
     if (!overlayGrid) return;
     overlayGrid.innerHTML = '';
+    // Reset selected card tracking when grid is re-rendered
+    selectedCardIds.clear();
+    overlaySelected.length = 0;
     const count = 22;
     const gap = 18;
     // switch to fanned overlapping layout inside the overlay
@@ -275,23 +440,117 @@ function initOverlayControls() {
 
 function showOverlayCombined() {
     const overlayResultEl = getOverlayResult();
+    const overlayGrid = getOverlayGrid();
     if (!overlayResultEl) return;
-    const parts = shuffle(overlaySelected.slice()).map(s => {
-        return `<li>${s.reversed ? '<em>(Reversed)</em> ' : ''}<strong>${escapeHtml(s.title)}</strong>: ${escapeHtml(s.reading)}</li>`;
-    });
-    overlayResultEl.classList.remove('hidden');
-    overlayResultEl.innerHTML = `<h3>Combined reading</h3><ul>${parts.join('')}</ul>`;
-    const clear = document.createElement('button'); clear.className = 'btn ghost clear-selection'; clear.textContent = 'Clear selection';
+    
+    // Fade out the card deck
+    if (overlayGrid) {
+        overlayGrid.style.transition = 'opacity 1.5s ease-out';
+        overlayGrid.style.opacity = '0';
+    }
+    
+    // Create horizontal layout: PNG image above reading for each card, side by side
+    const cardsHTML = overlaySelected.map((s, index) => {
+        const imagePath = s.image || getAssetForTitle(s.title);
+        return `
+            <div class="combined-card-item">
+                <div class="combined-card-image">
+                    <img src="${imagePath}" alt="${escapeHtml(s.title)}" class="selected-card-png">
+                </div>
+                <div class="combined-card-reading">
+                    <h4 class="combined-card-title">${s.reversed ? '<em>(Reversed)</em> ' : ''}${escapeHtml(s.title)}</h4>
+                    <p class="combined-card-text">${escapeHtml(s.reading)}</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Prepare the result HTML but start hidden
+    overlayResultEl.innerHTML = `
+        <h3>Combined reading</h3>
+        <div class="combined-reading-container">
+            ${cardsHTML}
+        </div>
+    `;
+    
+    const clear = document.createElement('button'); 
+    clear.className = 'btn ghost clear-selection'; 
+    clear.textContent = 'Clear selection';
     clear.addEventListener('click', () => {
         overlaySelected.forEach(s => { s.el.classList.remove('selected'); s.el.classList.remove('flipped'); s.el.dataset.picked = '0'; });
         overlaySelected.length = 0;
+        selectedCardIds.clear(); // Clear the tracking set
         overlayResultEl.classList.add('hidden');
+        overlayResultEl.classList.remove('fade-in');
+        // Reset card deck opacity
+        if (overlayGrid) {
+            overlayGrid.style.opacity = '1';
+            overlayGrid.style.transition = '';
+        }
     });
     overlayResultEl.appendChild(clear);
+    
+    // Show result and fade in after a short delay
+    overlayResultEl.classList.remove('hidden');
+    overlayResultEl.style.opacity = '0';
+    setTimeout(() => {
+        overlayResultEl.classList.add('fade-in');
+        overlayResultEl.style.transition = 'opacity 1.5s ease-in';
+        overlayResultEl.style.opacity = '1';
+        
+        // Scroll to center the results on screen within the overlay
+        setTimeout(() => {
+            const overlay = document.getElementById('cardsOverlay');
+            if (overlay) {
+                const resultRect = overlayResultEl.getBoundingClientRect();
+                const overlayRect = overlay.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                const scrollTarget = overlay.scrollTop + resultRect.top - overlayRect.top - (viewportHeight / 2) + (resultRect.height / 2);
+                overlay.scrollTo({
+                    top: scrollTarget,
+                    behavior: 'smooth'
+                });
+            }
+        }, 100);
+    }, 300);
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initOverlayControls);
 else initOverlayControls();
+
+// Handle user info form submission
+const submitUserInfoBtn = document.getElementById('submitUserInfo');
+const userNameInput = document.getElementById('userName');
+const userBirthdayInput = document.getElementById('userBirthday');
+
+if (submitUserInfoBtn) {
+    submitUserInfoBtn.addEventListener('click', () => {
+        const name = userNameInput?.value.trim();
+        const birthday = userBirthdayInput?.value;
+        
+        if (!name || !birthday) {
+            alert('Please fill in both name and birthday');
+            return;
+        }
+        
+        // Hide the form overlay
+        const userInfoOverlay = document.getElementById('userInfoOverlay');
+        if (userInfoOverlay) {
+            userInfoOverlay.classList.add('hidden');
+        }
+        
+        // Now show the cards grid
+        renderOverlayGrid();
+        
+        // Then fade in the questions window after cards load
+        setTimeout(() => {
+            const questionsWindow = document.getElementById('questionsWindow');
+            if (questionsWindow) {
+                questionsWindow.classList.remove('hidden');
+            }
+        }, 500);
+    });
+}
 
 // Floating typing text animation - DISABLED
 // const typingText = document.getElementById('typingText');
@@ -393,6 +652,10 @@ const selectedCards = [];
 
 // track overlay selections (for the full 22-card overlay)
 const overlaySelected = [];
+const selectedCardIds = new Set(); // Track selected card IDs to prevent duplicates
+
+// Track if questions are answered - prevents card selection until answered
+let questionsAnswered = false;
 
 // questionnaire removed — no submit handler
 
